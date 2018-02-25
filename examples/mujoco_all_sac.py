@@ -108,18 +108,7 @@ def get_variants(args):
 
 
 def run_experiment(variant):
-    if variant['env_name'] == 'humanoid-rllab':
-        from sac.envs.fully_observable_humanoid import FullyObservableHumanoid
-        env = FullyObservableHumanoid()
-    elif variant['env_name'] == 'ant':
-        from sac.envs.fully_observable_ant import FullyObservableAnt
-        env = FullyObservableAnt()
-    elif variant['env_name'] == 'hc':
-        from sac.envs.fully_observable_half_cheetah import FullyObservableHalfCheetah
-        env = FullyObservableHalfCheetah()
-    else:
-        raise ValueError('case not handled')
-    env = normalize(GymEnv(env))
+    env = normalize(GymEnv(variant['env_name']))
 
     pool = SimpleReplayBuffer(
         env_spec=env,

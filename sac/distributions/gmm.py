@@ -36,15 +36,28 @@ class GMM(object):
 
     @staticmethod
     def _create_log_gaussian(mu_t, log_sig_t, t):
+        abm = lambda x: tf.reduce_mean(tf.abs(x))
+        mu_t = mu_t
+        mu_t = tf.Print(mu_t, [abm(mu_t)], 'mu_t')
+        log_sig_t = log_sig_t
+        log_sig_t = tf.Print(log_sig_t, [abm(log_sig_t), tf.reduce_min(log_sig_t), tf.reduce_max(log_sig_t)], 'log_sig_t,min,max')
+        t = t
+        t = tf.Print(t, [abm(t)], 't')
         normalized_dist_t = (t - mu_t) * tf.exp(-log_sig_t)  # ... x D
+        normalized_dist_t = tf.Print(normalized_dist_t, [abm(normalized_dist_t)], 'normalized_dist_t')        
         quadratic = - 0.5 * tf.reduce_sum(normalized_dist_t ** 2, axis=-1)
+        quadratic = tf.Print(quadratic, [abm(quadratic)], 'quadratic')
         # ... x (None)
 
         log_z = tf.reduce_sum(log_sig_t, axis=-1)  # ... x (None)
+        log_z = tf.Print(log_z, [abm(log_z)], 'log_z')
         D_t = tf.cast(tf.shape(mu_t)[-1], tf.float32)
+        D_t = tf.Print(D_t, [abm(D_t)], 'D_t')
         log_z += 0.5 * D_t * np.log(2 * np.pi)
+        log_z = tf.Print(log_z, [abm(log_z)], 'log_z+')
 
         log_p = quadratic - log_z
+        log_p = tf.Print(log_p, [abm(log_p)], 'log_p')
 
         return log_p  # ... x (None)
 

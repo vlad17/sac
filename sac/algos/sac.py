@@ -236,11 +236,13 @@ class SAC(RLAlgorithm, Serializable):
         of the value function and policy function update rules.
         """
 
+        abm = lambda x: tf.reduce_mean(tf.abs(x))
         policy_dist = self._policy.get_distribution_for(
-            self._obs_pl, reuse=True)
-        log_pi_t = policy_dist.log_p_t  # N
+            tf.Print(self._obs_pl, [abm(self._obs_pl)], 'obs_pl'), reuse=True)
+        log_pi_t = tf.Print(policy_dist.log_p_t, [abm(policy_dist.log_p_t), abm(policy_dist.mus_t), abm(policy_dist.log_sigs_t), abm(policy_dist.x_t), abm(policy_dist.log_ws_t)], 'log_p_t,mus_t,logsigs_t,x_t')  # N
 
         self._vf_t = self._vf.get_output_for(self._obs_pl, reuse=True)  # N
+        self._vf_t = tf.Print(self._vf_t, [abm(self._vf_t)], 'vf_t')
         self._vf_params = self._vf.get_params_internal()
 
         log_target_t = self._qf.get_output_for(

@@ -57,7 +57,7 @@ class NoVideoSchedule(object):
 
 
 class GymEnv(Env, Serializable):
-    def __init__(self, env, record_video=False, video_schedule=None, log_dir=None, record_log=False,
+    def __init__(self, env_name, record_video=False, video_schedule=None, log_dir=None, record_log=False,
                  force_reset=True):
         if log_dir is None:
             if logger.get_snapshot_dir() is None:
@@ -65,9 +65,19 @@ class GymEnv(Env, Serializable):
                     "Warning: skipping Gym environment monitoring since snapshot_dir not configured.")
             else:
                 log_dir = os.path.join(logger.get_snapshot_dir(), "gym_log")
-        l = locals().copy()
-        del l['env']
-        Serializable.quick_init(self, l)
+        Serializable.quick_init(self, locals())
+
+        if env_name == 'humanoid-rllab':
+            from sac.envs.fully_observable_humanoid import FullyObservableHumanoid
+            env = FullyObservableHumanoid()
+        elif env_name == 'ant':
+            from sac.envs.fully_observable_ant import FullyObservableAnt
+            env = FullyObservableAnt()
+        elif env_name == 'hc':
+            from sac.envs.fully_observable_half_cheetah import FullyObservableHalfCheetah
+            env = FullyObservableHalfCheetah()
+        else:
+            raise ValueError('case {} not handled'.format(env_name))
 
         # HACK: Gets rid of the TimeLimit wrapper that sets 'done = True' when
         # the time limit specified for each environment has been passed and
@@ -121,14 +131,8 @@ class GymEnv(Env, Serializable):
                 recorder.done = True
         return self._mjcenv.reset()
 
-    ctr = 0
-
     def step(self, action):
-        print('step', self.ctr)
-        self.ctr += 1
-        print('ac', action.sum())
         next_obs, reward, done, info = self._mjcenv.step(action)
-        print('no', next_obs.sum())
         return Step(next_obs, reward, done, **info)
 
     def render(self, mode='human', close=False):

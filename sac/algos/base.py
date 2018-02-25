@@ -90,6 +90,10 @@ class RLAlgorithm(Algorithm):
                     iteration = t + epoch * self._epoch_length
 
                     action, _ = policy.get_action(observation)
+                    if t == 0:
+                        print(observation.shape, 'obs shape')
+                        print(action.shape, 'ac shape')
+
                     next_ob, reward, terminal, info = env.step(action)
                     path_length += 1
                     path_return += reward
@@ -117,12 +121,18 @@ class RLAlgorithm(Algorithm):
                     gt.stamp('sample')
 
                     if self._pool.size >= self._min_pool_size:
+                        print('pre train eval', self._policy.get_action(np.zeros((self._policy._Ds,))))
                         for i in range(self._n_train_repeat):
                             batch = self._pool.random_batch(self._batch_size)
+                            if i == 0:
+                                print('batch', batch)
                             self._do_training(iteration, batch)
+                            if i == 0:
+                                print('eval2')
+                                print('post train eval', self._policy.get_action(np.zeros((self._policy._Ds,))))
 
                     gt.stamp('train')
-
+                print('training done', policy)
                 self._evaluate(epoch)
 
                 params = self.get_snapshot(epoch)
@@ -158,7 +168,12 @@ class RLAlgorithm(Algorithm):
         if self._eval_n_episodes < 1:
             return
 
+
+        print('testing policy', self._policy)
+        print('POLICY AC', self._policy.get_action(np.zeros((self._policy._Ds,))))
+
         with self._policy.deterministic(self._eval_deterministic):
+            # print('DET POLICY AC', self._policy.get_action(np.zeros((self._policy._Ds,))))
             paths = rollouts(self._eval_env, self._policy,
                              self._max_path_length, self._eval_n_episodes,
                              False)

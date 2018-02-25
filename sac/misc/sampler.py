@@ -20,7 +20,6 @@ def rollout(env, policy, path_length, render=False, speedup=10, callback=None,
     all_infos = list()
     t = 0  # To make edge case path_length=0 work.
     for t in range(t, path_length):
-        print(observation)
         action, _ = policy.get_action(observation)
 
         if callback is not None:
