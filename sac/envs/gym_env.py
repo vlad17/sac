@@ -57,16 +57,15 @@ class NoVideoSchedule(object):
 
 
 class GymEnv(Env, Serializable):
-    def __init__(self, env_name, record_video=False, video_schedule=None, log_dir=None, record_log=False,
+    def __init__(self, env, record_video=False, video_schedule=None, log_dir=None, record_log=False,
                  force_reset=True):
         if log_dir is None:
             if logger.get_snapshot_dir() is None:
-                logger.log("Warning: skipping Gym environment monitoring since snapshot_dir not configured.")
+                logger.log(
+                    "Warning: skipping Gym environment monitoring since snapshot_dir not configured.")
             else:
                 log_dir = os.path.join(logger.get_snapshot_dir(), "gym_log")
         Serializable.quick_init(self, locals())
-
-        env = gym.envs.make(env_name)
 
         # HACK: Gets rid of the TimeLimit wrapper that sets 'done = True' when
         # the time limit specified for each environment has been passed and
@@ -87,7 +86,8 @@ class GymEnv(Env, Serializable):
             else:
                 if video_schedule is None:
                     video_schedule = CappedCubicVideoSchedule()
-            self.env = gym.wrappers.Monitor(self.env, log_dir, video_callable=video_schedule, force=True)
+            self.env = gym.wrappers.Monitor(
+                self.env, log_dir, video_callable=video_schedule, force=True)
             self.monitoring = True
 
         self._observation_space = convert_gym_space(env.observation_space)
@@ -140,4 +140,3 @@ class GymEnv(Env, Serializable):
 
     ***************************
                 """ % self._log_dir)
-

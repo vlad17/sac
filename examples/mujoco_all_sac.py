@@ -46,7 +46,7 @@ ENV_PARAMS = {
     },
     'half-cheetah': {  # 6 DoF
         'prefix': 'half-cheetah',
-        'env_name': 'HalfCheetah-v1',
+        'env_name': 'hc',
         'max_path_length': 1000,
         'n_epochs': 10000,
         'scale_reward': 1,
@@ -61,7 +61,7 @@ ENV_PARAMS = {
     },
     'ant': {  # 8 DoF
         'prefix': 'ant',
-        'env_name': 'Ant-v1',
+        'env_name': 'ant',
         'max_path_length': 1000,
         'n_epochs': 10000,
         'scale_reward': 3,
@@ -109,13 +109,17 @@ def get_variants(args):
 
 def run_experiment(variant):
     if variant['env_name'] == 'humanoid-rllab':
-        from rllab.envs.mujoco.humanoid_env import HumanoidEnv
-        env = normalize(HumanoidEnv())
-    elif variant['env_name'] == 'swimmer-rllab':
-        from rllab.envs.mujoco.swimmer_env import SwimmerEnv
-        env = normalize(SwimmerEnv())
+        from sac.envs.fully_observable_humanoid import FullyObservableHumanoid
+        env = FullyObservableHumanoid()
+    elif variant['env_name'] == 'ant':
+        from sac.envs.fully_observable_ant import FullyObservableAnt
+        env = FullyObservableAnt()
+    elif variant['env_name'] == 'hc':
+        from sac.envs.fully_observable_half_cheetah import FullyObservableHalfCheetah
+        env = FullyObservableHalfCheetah()
     else:
-        env = normalize(GymEnv(variant['env_name']))
+        raise ValueError('case not handled')
+    env = normalize(GymEnv(env))
 
     pool = SimpleReplayBuffer(
         env_spec=env.spec,

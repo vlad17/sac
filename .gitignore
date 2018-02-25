@@ -11,3 +11,5 @@ rllab/ec2_info.py
 gym
 *.TXT
 *.pkl
+
+*~
