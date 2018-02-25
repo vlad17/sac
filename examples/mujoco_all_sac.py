@@ -30,21 +30,21 @@ SHARED_PARAMS = {
 
 
 ENV_PARAMS = {
-    'swimmer': { # 2 DoF
+    'swimmer': {  # 2 DoF
         'prefix': 'swimmer',
         'env_name': 'swimmer-rllab',
         'max_path_length': 1000,
         'n_epochs': 2000,
         'scale_reward': 100,
     },
-    'hopper': { # 3 DoF
+    'hopper': {  # 3 DoF
         'prefix': 'hopper',
         'env_name': 'Hopper-v1',
         'max_path_length': 1000,
         'n_epochs': 3000,
         'scale_reward': 1,
     },
-    'half-cheetah': { # 6 DoF
+    'half-cheetah': {  # 6 DoF
         'prefix': 'half-cheetah',
         'env_name': 'HalfCheetah-v1',
         'max_path_length': 1000,
@@ -52,21 +52,21 @@ ENV_PARAMS = {
         'scale_reward': 1,
         'max_pool_size': 1E7,
     },
-    'walker': { # 6 DoF
+    'walker': {  # 6 DoF
         'prefix': 'walker',
         'env_name': 'Walker2d-v1',
         'max_path_length': 1000,
         'n_epochs': 5000,
         'scale_reward': 3,
     },
-    'ant': { # 8 DoF
+    'ant': {  # 8 DoF
         'prefix': 'ant',
         'env_name': 'Ant-v1',
         'max_path_length': 1000,
         'n_epochs': 10000,
         'scale_reward': 3,
     },
-    'humanoid': { # 21 DoF
+    'humanoid': {  # 21 DoF
         'prefix': 'humanoid',
         'env_name': 'humanoid-rllab',
         'max_path_length': 1000,
@@ -77,13 +77,14 @@ ENV_PARAMS = {
 DEFAULT_ENV = 'swimmer'
 AVAILABLE_ENVS = list(ENV_PARAMS.keys())
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--env',
                         type=str,
                         choices=AVAILABLE_ENVS,
                         default='swimmer')
-    parser.add_argument('--exp_name',type=str, default=timestamp())
+    parser.add_argument('--exp_name', type=str, default=timestamp())
     parser.add_argument('--mode', type=str, default='local')
     parser.add_argument('--log_dir', type=str, default=None)
     args = parser.parse_args()
@@ -173,7 +174,7 @@ def run_experiment(variant):
 
 def launch_experiments(variant_generator):
     variants = variant_generator.variants()
-
+    import os
     for i, variant in enumerate(variants):
         print('Launching {} experiments.'.format(len(variants)))
         run_sac_experiment(
@@ -181,8 +182,9 @@ def launch_experiments(variant_generator):
             mode=args.mode,
             variant=variant,
             exp_prefix=variant['prefix'] + '/' + args.exp_name,
-            exp_name=variant['prefix'] + '-' + args.exp_name + '-' + str(i).zfill(2),
-            n_parallel=1,
+            exp_name=variant['prefix'] + '-' +
+            args.exp_name + '-' + str(i).zfill(2),
+            n_parallel=int(os.getenv('SAC_NPARALLEL')),
             seed=variant['seed'],
             terminate_machine=True,
             log_dir=args.log_dir,
@@ -190,6 +192,7 @@ def launch_experiments(variant_generator):
             snapshot_gap=variant['snapshot_gap'],
             sync_s3_pkl=variant['sync_pkl'],
         )
+
 
 if __name__ == '__main__':
     args = parse_args()
