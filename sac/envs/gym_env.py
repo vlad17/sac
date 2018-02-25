@@ -73,8 +73,7 @@ class GymEnv(Env, Serializable):
         # on time rather than state).
         # env = env.env
 
-        self.env = env
-        self.env_id = env.spec.id
+        self._mjcenv = env
 
         assert not (not record_log and record_video)
 
@@ -86,7 +85,7 @@ class GymEnv(Env, Serializable):
             else:
                 if video_schedule is None:
                     video_schedule = CappedCubicVideoSchedule()
-            self.env = gym.wrappers.Monitor(
+            self._mjcenv = gym.wrappers.Monitor(
                 self.env, log_dir, video_callable=video_schedule, force=True)
             self.monitoring = True
 
@@ -94,7 +93,7 @@ class GymEnv(Env, Serializable):
         logger.log("observation space: {}".format(self._observation_space))
         self._action_space = convert_gym_space(env.action_space)
         logger.log("action space: {}".format(self._action_space))
-        self._horizon = env.spec.tags['wrapper_config.TimeLimit.max_episode_steps']
+        self._horizon = 1000 # env.spec.tags['wrapper_config.TimeLimit.max_episode_steps']
         self._log_dir = log_dir
         self._force_reset = force_reset
 
@@ -113,23 +112,28 @@ class GymEnv(Env, Serializable):
     def reset(self):
         if self._force_reset and self.monitoring:
             from gym.wrappers.monitoring import Monitor
-            assert isinstance(self.env, Monitor)
-            recorder = self.env.stats_recorder
+            assert isinstance(self._mjcenv, Monitor)
+            recorder = self._mjcenv.stats_recorder
             if recorder is not None:
                 recorder.done = True
-        return self.env.reset()
+        return self._mjcenv.reset()
 
+    ctr = 0
     def step(self, action):
-        next_obs, reward, done, info = self.env.step(action)
+        print('step', self.ctr)
+        self.ctr += 1
+        print('ac', action.sum())
+        next_obs, reward, done, info = self._mjcenv.step(action)
+        print('no', next_obs.sum())
         return Step(next_obs, reward, done, **info)
 
     def render(self, mode='human', close=False):
-        return self.env._render(mode, close)
+        return self._mjcenv._render(mode, close)
         # self.env.render()
 
     def terminate(self):
         if self.monitoring:
-            self.env._close()
+            self._mjcenv._close()
             if self._log_dir is not None:
                 print("""
     ***************************

@@ -122,7 +122,7 @@ def run_experiment(variant):
     env = normalize(GymEnv(env))
 
     pool = SimpleReplayBuffer(
-        env_spec=env.spec,
+        env_spec=env,
         max_replay_buffer_size=variant['max_pool_size'],
     )
 
