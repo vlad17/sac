@@ -121,7 +121,7 @@ class FullyObservableHumanoid(RenderFreeMJC, FullyObservable):
             data.cinert.ravel(),
             data.cvel.ravel(),
             data.qfrc_actuator.ravel(),
-            data.cfrc_ext.ravel(),
+            np.clip(data.cfrc_ext.ravel(), -1, 1),
             # difference from gym: need to add in com pos for reward
             data.xipos.ravel()
         ])
